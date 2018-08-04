@@ -4,7 +4,7 @@
 """
 import tensorflow as tf
 from keras.layers import Conv2D, Activation, Add, BatchNormalization
-from keras.initializers import  glorot_normal
+from keras.initializers import glorot_normal
 from keras.regularizers import l2
 import numpy as np
 import keras.backend as K

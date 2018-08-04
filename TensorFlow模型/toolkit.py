@@ -1,5 +1,6 @@
 import h5py
 import numpy as np
+import tensorflow as tf
 
 
 train_path = r"E:\Github_project\Residual_network\data_sets\train_signs.h5"
@@ -24,6 +25,20 @@ def load_data():
 def convert_to_one_hot(Y, classes):
     Y = np.eye(classes)[Y]
     return Y
+
+
+# 构建权重初始化
+def initialize_weights(shape, fan_in):
+    with tf.name_scope("weights"):
+        w = tf.Variable(tf.truncated_normal(shape=shape, mean=0, stddev=np.sqrt(1/fan_in)), name="weights")
+        return w
+
+
+# 构建卷积层
+def 
+
+
+
 
 
 if __name__ == "__main__":
