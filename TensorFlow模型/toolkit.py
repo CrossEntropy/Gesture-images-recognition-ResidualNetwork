@@ -76,10 +76,6 @@ def activation(z, act=tf.nn.relu):
     return a
 
 
-
-
-
-
 if __name__ == "__main__":
     train_x_orig, train_y_orig, test_x_orig, test_y_orig, classes = load_data()
     print(train_x_orig.shape)   # 训练集特征的shape (1080, 64, 64, 3)
