@@ -34,9 +34,9 @@ def convert_to_one_hot(Y, classes):
 
 def initialize_weights(shape, fan_in):
     """
-    构建权重初始化, 采用的初始化方法为He
-    :param shape: 权重的维度, np.alist, shape is (f, f, n_c_prev, n_c)
-    :param fan_in: 上一层神经元的个数, int
+    构建权重初始化, 采用的初始化方法为He(何凯明)
+    :param shape: 权重的维度。 np.array, shape is (f, f, n_c_prev, n_c)
+    :param fan_in: 上一层滤波器的个数, int
     :return: tf.tensor， shape is (f, f, n_c_prev, n_c)
     """
     with tf.name_scope("weights"):
@@ -44,17 +44,21 @@ def initialize_weights(shape, fan_in):
         return w
 
 
-def conv2d(a_prev, shape, strides, padding):
+def conv2d(a_prev, filters_h, num_filters, strides, padding):
     """
     构建卷积层
-    :param a_prev: 上一层的输出, tf.tensor, shape is (m, n_h_prev, n_w_prev, n_c_prev)
-    :param shape: 本层权重的维度, (f, f, n_c_prev, n_c)
-    :param strides: 卷积的步长, int
-    :param padding: 卷积的模式, str, "SAME"or"VALID
-    :return: 本层的卷积输出, tf.tensor， shape根据padding所定
+    :param a_prev: 上一层的输出. tf.tensor, shape is (m, n_h_prev, n_w_prev, n_c_prev)
+    :param filters_h: 滤波器的尺寸，默认height==width is True. int
+    :param num_filters: 滤波器的个数. int
+    :param strides: 卷积的步长. int
+    :param padding: 卷积的模式. str, "SAME"or"VALID
+    :return: 本层的卷积输出. tf.tensor， shape根据padding所定
     """
-    # 获得上一层神经元的个数
+    # 获得上一层滤波器的个数
     fan_in = a_prev.get_shape.as_list[-1]
+
+    # 构造下一层权重的维度
+    shape = (filters_h, filters_h, fan_in, num_filters)
 
     # 初始化权重
     w = initialize_weights(shape, fan_in)
@@ -65,15 +69,46 @@ def conv2d(a_prev, shape, strides, padding):
     return z
 
 
-def activation(z, act=tf.nn.relu):
+def identity_block(a_prev, num_filters, f, training=True):
     """
-    构建激活函数
-    :param z: 未经过激活函数的张量, tf.tensor
-    :param act: 激活函数的选择, 函数对象
-    :return: 经过激活函数的张量
+    构建恒等映射块
+    :param a_prev: 上一层的输出. tf.tensor
+    :param num_filters: 滤波器的数量. tuple, (F1, F2, F3)
+    :param f: 中间的滤波器的数量. int
+    :param training: 训练还是测试 bool
+    :return: tf.tensor
     """
-    a = act(z)
+    # 滤波器的数量
+    (F1, F2, F3) = num_filters
+
+    # 构建main path
+    with tf.name_scope("Main_path"):
+        with tf.name_scope("Conv_1"):   # 第一个卷积层
+            z_1 = conv2d(a_prev, filters_h=1, num_filters=F1, strides=1, padding="VALID")
+        with tf.name_scope("BN_1"):     # 第一个BN
+            z_bn = tf.layers.batch_normalization(z_1, training=training)
+        with tf.name_scope("Conv_2"):   # 第二个卷积层
+            z_2 = conv2d(z_bn, filters_h=f, num_filters=F2, strides=1, padding="SAME")
+        with tf.name_scope("BN_2"):     # 第二个BN
+            z_bn = tf.layers.batch_normalization(z_2, training=training)
+        with tf.name_scope("Conv_3"):   # 第三个卷积层
+            z_3 = conv2d(z_bn, filters_h=1, num_filters=F3, strides=1, padding="VALID")
+        with tf.name_scope("BN_3"):     # 第三个BN
+            z_bn = tf.layers.batch_normalization(z_3, training=training)
+
+    # 构建 shortcut, 原文中称之为skip connection
+    with tf.name_scope("Shortcut"):
+        shortcut = tf.identity(a_prev)
+
+    # 激活层
+    with tf.name_scope("Activation"):
+        a = tf.nn.relu(tf.add(shortcut, z_bn))
+
     return a
+
+
+
+
 
 
 if __name__ == "__main__":
