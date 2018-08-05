@@ -3,7 +3,7 @@
 将 权重初始化改为 Glorot or Xaiver_nomal
 """
 
-
+import numpy as np
 from keras.layers import Conv2D,  BatchNormalization, Activation, MaxPooling2D
 from keras.layers import Add
 from keras.initializers import glorot_normal
@@ -11,7 +11,6 @@ from keras.regularizers import l2
 import tensorflow as tf
 import keras.backend as K
 K.set_image_data_format("channels_last")
-import numpy as np
 
 
 def convolutional_block(X, f, filters, stage, block, s=2, lamd=0.00001, lamd1=0.00001, lamd2=0.00001):

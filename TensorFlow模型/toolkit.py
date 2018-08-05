@@ -8,6 +8,9 @@ test_path = r"E:\Github_project\Residual_network\data_sets\test_signs.h5"
 
 
 def load_data():
+    """"
+    加载数据集
+    """
     train_dataset = h5py.File(train_path, "r")  # 加载训练集
     train_set_x = np.array(train_dataset["train_set_x"][:])  # 特征
     train_set_y = np.array(train_dataset["train_set_y"][:])  # 标签
@@ -69,12 +72,12 @@ def conv2d(a_prev, filters_h, num_filters, strides, padding):
     return z
 
 
-def identity_block(a_prev, num_filters, f, training=True):
+def identity_block(a_prev, num_filters, f=3, training=True):
     """
     构建恒等映射块
     :param a_prev: 上一层的输出. tf.tensor
-    :param num_filters: 滤波器的数量. tuple, (F1, F2, F3)
-    :param f: 中间的滤波器的数量. int
+    :param num_filters: 全部卷积层滤波器的数量. tuple, (F1, F2, F3)
+    :param f: 第二个卷积层滤波器的尺寸. int
     :param training: 训练还是测试 bool
     :return: tf.tensor
     """
@@ -107,6 +110,50 @@ def identity_block(a_prev, num_filters, f, training=True):
     return a
 
 
+def convolution_block(a_prev, num_filters, f=3, s=2, training=True):
+    """
+    构建卷积映射块
+    :param a_prev: 上一层的输出. tf.tensor
+    :param num_filters: 全部卷积层滤波器的数量. tuple, (F1, F2，F3)
+    :param f: 第二个卷积层的滤波器的尺寸. int
+    :param s: 第一个卷积层滤波器的步长. int
+    :param training: 训练还是测试. bool
+    :return: tf.tensor
+    """
+    # 滤波器的数量
+    (F1, F2, F3) = num_filters
+
+    # 构建main path
+    with tf.name_scope("Main_path"):
+        with tf.name_scope("Conv_1"):  # 第一个卷积层
+            z_1 = conv2d(a_prev, filters_h=1, num_filters=F1, strides=s, padding="VALID")
+        with tf.name_scope("BN_1"):  # 第一个BN
+            z_bn = tf.layers.batch_normalization(z_1, training=training)
+        with tf.name_scope("Conv_2"):  # 第二个卷积层
+            z_2 = conv2d(z_bn, filters_h=f, num_filters=F2, strides=1, padding="SAME")
+        with tf.name_scope("BN_2"):  # 第二个BN
+            z_bn = tf.layers.batch_normalization(z_2, training=training)
+        with tf.name_scope("Conv_3"):  # 第三个卷积层
+            z_3 = conv2d(z_bn, filters_h=1, num_filters=F3, strides=1, padding="VALID")
+        with tf.name_scope("BN_3"):  # 第三个BN
+            z_bn = tf.layers.batch_normalization(z_3, training=training)
+
+    # 构建 shortcut, 原文中称之为skip connection
+    with tf.name_scope("Shortcut"):
+        with tf.name_scope("Conv_4"):
+            z_4 = conv2d(z_bn, filters_h=1, num_filters=F3, strides=s, padding="VALID")
+        with tf.name_scope("BN_4"):
+            shortcut = tf.layers.batch_normalization(z_4, training=training)
+
+    # 激活层
+    with tf.name_scope("Activation"):
+        a = tf.nn.relu(tf.add(shortcut, z_bn))
+
+    return a
+
+
+def flatten(a_prev):
+    a = tf.reshape(a_prev, shape=(-1, ))
 
 
 
