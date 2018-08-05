@@ -3,19 +3,22 @@ import numpy as np
 import tensorflow as tf
 
 
-train_path = r"E:\Github_project\Residual_network\data_sets\train_signs.h5"
-test_path = r"E:\Github_project\Residual_network\data_sets\test_signs.h5"
+class Config:
+    train_path = "E:\\Github_project\\Residual_network\\data_sets\\train_signs.h5"   # 训练集的路径
+    test_path = "E:\\Github_project\\Residual_network\\data_sets\\test_signs.h5"     # 测试集的路径
+    logdir = "E:\\Github_project\\Residual_network\\TensorFlow模型\\graph"           # event文件存放的路径
+    mode_path = "E:\\Github_project\\Residual_network\\TensorFlow模型\\model"        # Variable存放的路径
 
 
 def load_data():
     """"
     加载数据集
     """
-    train_dataset = h5py.File(train_path, "r")  # 加载训练集
+    train_dataset = h5py.File(Config.train_path, "r")  # 加载训练集
     train_set_x = np.array(train_dataset["train_set_x"][:])  # 特征
     train_set_y = np.array(train_dataset["train_set_y"][:])  # 标签
 
-    test_dataset = h5py.File(test_path, "r")  # 加载测试集
+    test_dataset = h5py.File(Config.test_path, "r")  # 加载测试集
     test_set_x = np.array(test_dataset["test_set_x"][:])   # 特征
     test_set_y = np.array(test_dataset["test_set_y"][:])   # 标签
 
@@ -153,9 +156,8 @@ def convolution_block(a_prev, num_filters, f=3, s=2, training=True):
 
 
 def flatten(a_prev):
-    a = tf.reshape(a_prev, shape=(-1, ))
-
-
+    a = tf.reshape(a_prev, shape=(-1, 2048))
+    return a
 
 
 if __name__ == "__main__":
