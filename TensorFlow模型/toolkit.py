@@ -209,7 +209,7 @@ def fully_connected(a_prev, fan_out=6):
     :return: Z. tf.tensor, shape is (batch_size, fan_out)
     """
     # 获得 fan_in
-    fan_in = a_prev.get_shape().as_list[-1]
+    fan_in = a_prev.get_shape().as_list()[-1]
 
     # 初始化权重
     w = initialize_weights((fan_in, fan_out), fan_in)
