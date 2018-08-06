@@ -1,21 +1,15 @@
-"""
-将 Conv2D中的bias去掉
-将 权重初始化改为 Glorot or Xaiver_nomal
-"""
-
-import numpy as np
-from keras.layers import Conv2D,  BatchNormalization, Activation, MaxPooling2D
+from keras.layers import Conv2D, BatchNormalization, Activation, MaxPooling2D
 from keras.layers import Add
-from keras.initializers import glorot_normal
-from keras.regularizers import l2
+from keras.initializers import glorot_uniform
 import tensorflow as tf
 import keras.backend as K
+import numpy as np
 K.set_image_data_format("channels_last")
 
 
-def convolutional_block(X, f, filters, stage, block, s=2, lamd=0.00001, lamd1=0.00001, lamd2=0.00001):
+def convolutional_block(X, f, filters, stage, block, s=2):
     """
-    Implementation of the convolutional block
+    Implementation of the convolutional block as defined in Figure 4
 
     Arguments:
     X -- input tensor of shape (m, n_H_prev, n_W_prev, n_C_prev)
@@ -42,25 +36,25 @@ def convolutional_block(X, f, filters, stage, block, s=2, lamd=0.00001, lamd1=0.
     # MAIN PATH
     # First component of main path
     X = Conv2D(F1, (1, 1), strides=(s, s), padding="valid", name=conv_name_base + '2a',
-               kernel_initializer=glorot_normal(seed=0), use_bias=False, kernel_regularizer=l2(lamd))(X)
-    X = BatchNormalization(axis=3, name=bn_name_base + "2a", gamma_regularizer=l2(lamd1), beta_regularizer=l2(lamd2))(X)
+               kernel_initializer=glorot_uniform(seed=0))(X)
+    X = BatchNormalization(axis=3, name=bn_name_base + '2a')(X)
     X = Activation('relu')(X)
 
     # Second component of main path
     X = Conv2D(F2, (f, f), strides=(1, 1), padding="same", name=conv_name_base + "2b",
-               kernel_initializer=glorot_normal(seed=0), use_bias=False, kernel_regularizer=l2(lamd))(X)
-    X = BatchNormalization(axis=3, name=bn_name_base + "2b", gamma_regularizer=l2(lamd1), beta_regularizer=l2(lamd2))(X)
+               kernel_initializer=glorot_uniform(seed=0))(X)
+    X = BatchNormalization(axis=3, name=bn_name_base + "2b")(X)
     X = Activation("relu")(X)
 
     # Third component of main path
     X = Conv2D(F3, (1, 1), strides=(1, 1), padding="valid", name=conv_name_base + "2c",
-               kernel_initializer=glorot_normal(seed=0), use_bias=False, kernel_regularizer=l2(lamd))(X)
-    X = BatchNormalization(axis=3, name=bn_name_base + "2c", gamma_regularizer=l2(lamd1), beta_regularizer=l2(lamd2))(X)
+               kernel_initializer=glorot_uniform(seed=0))(X)
+    X = BatchNormalization(axis=3, name=bn_name_base + "2c")(X)
 
     # SHORTCUT PATH
-    X_shortcut = Conv2D(F3, (1, 1), strides=(s, s), padding="valid", kernel_initializer=glorot_normal(seed=0),
-                        name=conv_name_base + "1", use_bias=False, kernel_regularizer=l2(lamd))(X_shortcut)
-    X_shortcut = BatchNormalization(axis=3, name=bn_name_base + "1", gamma_regularizer=l2(lamd1), beta_regularizer=l2(lamd2))(X_shortcut)
+    X_shortcut = Conv2D(F3, (1, 1), strides=(s, s), padding="valid", kernel_initializer=glorot_uniform(seed=0),
+                        name=conv_name_base + "1")(X_shortcut)
+    X_shortcut = BatchNormalization(axis=3, name=bn_name_base + "1")(X_shortcut)
 
     # Final step: Add shortcut value to main path, and pass it through a RELU activation
     X = Add()([X, X_shortcut])

@@ -1,12 +1,12 @@
-from keras.layers import AveragePooling2D, ZeroPadding2D
-from keras.layers import Input, Flatten, Dense
-from keras.initializers import glorot_uniform
+from keras.layers import ZeroPadding2D,  Dense, Flatten
+from keras.layers import AveragePooling2D
+from keras.layers import Input
 from keras.models import Model
 from keras.utils.vis_utils import plot_model
-from Kears_model.conv_block import *
-from Kears_model.id_block import *
-from tutorial import *
 import time
+from Keras_model.conv_block import *
+from Keras_model.id_block import *
+from Keras_model.tutorial import *
 import keras.backend as K
 K.set_image_data_format("channels_last")
 
@@ -76,18 +76,17 @@ def ResNets_50(input_shape=(64, 64, 3), classes=6):
 
 
 if __name__ == "__main__":
-
     # 对signal dataset进行学习和测试
     # 载入数据集
     train_X_orig, train_Y_orig, test_X_orig, test_Y_orig, classes = load_data()
     # 对特征和标签进行处理
     train_X = train_X_orig / 255
     test_X = test_X_orig / 255
-    train_Y = convert_to_one_hot(train_Y_orig, 6).T   # 将训练样本的标签转换成one-hot模式，并将标签按行摆放
+    train_Y = convert_to_one_hot(train_Y_orig, 6).T  # 将训练样本的标签转换成one-hot模式，并将标签按行摆放
     test_Y = convert_to_one_hot(test_Y_orig, 6).T     # 将测试样本的标签转换成one-hot模式，并将标签按行摆放
 
-    input_shape = (64, 64, 3)                         # 输入特征的尺寸=(64, 64, 3)
-    classes = classes.shape[0]                        # 类别的数量=6
+    input_shape = (64, 64, 3)  # 输入特征的尺寸=(64, 64, 3)
+    classes = classes.shape[0]  # 类别的数量=6
     # 构建一个50层的模型
     model = ResNets_50(input_shape, classes)
     # 对模型进行编译
@@ -96,15 +95,12 @@ if __name__ == "__main__":
     start = time.time()  # 对训练模型的花费的时间进行评估
     model.fit(x=train_X, y=train_Y, epochs=50, batch_size=32)
     end = time.time()
-    print("训练模型耗费的时间: "+str(end-start)+"s")    # 训练模型耗费的时间: 448.1367087364197s
-
+    print("训练模型耗费的时间: "+str(end-start)+"s")  # 训练模型耗费的时间为: 480.7594470977783s
     # 采用测试集评估
     pre = model.evaluate(x=test_X, y=test_Y)
     print("测试集的loss: " + str(pre[0]))
     print("测试集的accuracy: "+ str(pre[1]))
     # 将模型保存
-    model.save(filepath=r"C:\python_programme\Andrew_Ng\CLASS_4\week2\Residula_network\修改后的模型\保存好的模型\model_4.h5")
+    model.save(filepath="model_1.h5")
     # 将模型的图画出
-    plot_model(model, "model_3.png")
-
-
+    plot_model(model, "E:\\Github_project\\Residual_network\\Keras_model\\graph\\model_1.png")

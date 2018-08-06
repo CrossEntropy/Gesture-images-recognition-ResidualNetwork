@@ -1,17 +1,12 @@
-"""
-将 Conv2D中的bias去掉
-将 权重初始化改为 Glorot or Xaiver_nomal
-"""
 import tensorflow as tf
 from keras.layers import Conv2D, Activation, Add, BatchNormalization
-from keras.initializers import glorot_normal
-from keras.regularizers import l2
+from keras.initializers import glorot_uniform
 import numpy as np
 import keras.backend as K
 K.set_image_data_format('channels_last')
 
 
-def identity_block(X, f, filters, stage, block, lamd=0.00001, lamd1=0.00001, lamd2=0.00001):
+def identity_block(X, f, filters, stage, block):
     """
     实施一个恒等块(identity block)
 
@@ -37,21 +32,21 @@ def identity_block(X, f, filters, stage, block, lamd=0.00001, lamd1=0.00001, lam
     X_shorcut = X
 
     # 卷积层1, 值得注意的是每个卷积层的后面都要跟着BatchNormalization
-    X = Conv2D(filters=F1, kernel_size=(1, 1), strides=(1, 1), name=conv_base_name+"2a", padding="valid",
-               kernel_initializer=glorot_normal(0), use_bias=False, kernel_regularizer=l2(lamd))(X)
-    X = BatchNormalization(axis=3, name=batch_base_name+"2a", gamma_regularizer=l2(lamd1), beta_regularizer=l2(lamd2))(X)
+    X = Conv2D(filters=F1, kernel_size=(1, 1), strides=(1, 1),name=conv_base_name+"2a", padding="valid",
+               kernel_initializer=glorot_uniform(0))(X)
+    X = BatchNormalization(axis=3, name=batch_base_name+"2a")(X)
     X = Activation("relu")(X)
 
     # 卷积层2
     X = Conv2D(filters=F2, kernel_size=(f, f), strides=(1, 1), name=conv_base_name+"2b", padding="same",
-               kernel_initializer=glorot_normal(0), use_bias=False, kernel_regularizer=l2(lamd))(X)
-    X = BatchNormalization(axis=3, name=batch_base_name+"2b", gamma_regularizer=l2(lamd1), beta_regularizer=l2(lamd2))(X)
+               kernel_initializer=glorot_uniform(0))(X)
+    X = BatchNormalization(axis=3, name=batch_base_name+"2b")(X)
     X = Activation("relu")(X)
 
     # 卷积层3, 不要加激活函数
     X = Conv2D(filters=F3, kernel_size=(1, 1), strides=(1, 1), name=conv_base_name+"2c", padding="valid",
-               kernel_initializer=glorot_normal(0), use_bias=False, kernel_regularizer=l2(lamd))(X)
-    X = BatchNormalization(axis=3, name=batch_base_name+"2c", gamma_regularizer=l2(lamd1), beta_regularizer=l2(lamd2))(X)
+               kernel_initializer=glorot_uniform(0))(X)
+    X = BatchNormalization(axis=3, name=batch_base_name+"2c")(X)
 
     # 将shorcut 加到 main path中，然后再激活
     X = Add()([X_shorcut, X])

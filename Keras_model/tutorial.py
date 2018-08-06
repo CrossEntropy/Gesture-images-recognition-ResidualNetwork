@@ -1,8 +1,8 @@
 import h5py
 import numpy as np
 
-train_path = r"E:\好东西\Residual_network\datasets\train_signs.h5"
-test_path = r"E:\好东西\Residual_network\datasets\test_signs.h5"
+train_path = r"E:\Github_project\Residual_network\data_sets\train_signs.h5"
+test_path = r"E\Github_project\Residual_network\data_sets\est_signs.h5"
 
 
 def load_data():
