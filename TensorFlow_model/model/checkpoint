@@ -1,0 +1,2 @@
+model_checkpoint_path: "E:\\Github_project\\Residual_network\\TensorFlow_model\\model\\var.ckpt"
+all_model_checkpoint_paths: "E:\\Github_project\\Residual_network\\TensorFlow_model\\model\\var.ckpt"
