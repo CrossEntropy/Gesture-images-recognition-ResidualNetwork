@@ -83,11 +83,11 @@ if __name__ == "__main__":
     # 对特征和标签进行处理
     train_X = train_X_orig / 255
     test_X = test_X_orig / 255
-    train_Y = convert_to_one_hot(train_Y_orig, 6).T  # 将训练样本的标签转换成one-hot模式，并将标签按行摆放
+    train_Y = convert_to_one_hot(train_Y_orig, 6).T   # 将训练样本的标签转换成one-hot模式，并将标签按行摆放
     test_Y = convert_to_one_hot(test_Y_orig, 6).T     # 将测试样本的标签转换成one-hot模式，并将标签按行摆放
 
-    input_shape = (64, 64, 3)  # 输入特征的尺寸=(64, 64, 3)
-    classes = classes.shape[0]  # 类别的数量=6
+    input_shape = (64, 64, 3)                         # 输入特征的尺寸=(64, 64, 3)
+    classes = classes.shape[0]                        # 类别的数量=6
     # 构建一个50层的模型
     model = ResNets_50(input_shape, classes)
     # 对模型进行编译
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     start = time.time()  # 对训练模型的花费的时间进行评估
     model.fit(x=train_X, y=train_Y, epochs=50, batch_size=32)
     end = time.time()
-    print("训练模型耗费的时间: "+str(end-start)+"s")   #训练模型耗费的时间: 448.1367087364197s
+    print("训练模型耗费的时间: "+str(end-start)+"s")    # 训练模型耗费的时间: 448.1367087364197s
 
     # 采用测试集评估
     pre = model.evaluate(x=test_X, y=test_Y)

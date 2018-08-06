@@ -14,7 +14,8 @@ class Config:
     width = 64         # 图像的宽
     paddings = 3       # 填充的圈数
     num_classes = 6    # 类别的总数
-
+    epochs = 50        # epoch的总数
+    learning_rate = 0.001      # 学习率
 
 def load_data():
     """"

@@ -108,8 +108,42 @@ with tf.Graph().as_default():  # 构建计算图
         accuracy = tf.reduce_mean(tf.cast(bool_list, tf.float32))
 
     # 存放计算图
-    writer = tf.summary.FileWriter(logdir=Config.logdir, graph=tf.get_default_graph())
-    writer.close()
+    # writer = tf.summary.FileWriter(logdir=Config.logdir, graph=tf.get_default_graph())
+    # writer.close()
+
+    # 构建变量初始化节点
+    init_op = tf.global_variables_initializer()
+
+    # 读取数据集
+    train_set_x, train_set_y, test_set_x, test_set_y, classes = load_data()
+    train_set_x /= 255  # 训练集的图像预处理
+    test_set_x /= 255   # 测试集的图像预处理
+
+    # 运行计算图
+    with tf.Session() as sess:
+
+        # 运行变量初始化节点
+        sess.run(init_op)
+
+        # 设置seed, 用于shuffle 数据集
+        seed = 0
+        steps = 0  # 迭代的步数
+
+        for epoch in range(Config.epochs):   # 50个epochs
+            seed += 1                        # 确保每次shuffle数据集都具有随机性
+            batches = mini_batches(train_set_x, train_set_y, seed)
+            for x_batch, y_batch in batches:
+                steps += 1
+                loss_v, _ = sess.run([loss, optimizer], feed_dict={x: x_batch, y: y_batch,
+                                                                   learning_rate: Config.learning_rate})
+
+                # 每迭代10步打印一下loss, 准确率
+                if steps % 10 == 0:
+                    accuracy_v = sess.run(accuracy, feed_dict={x: x_batch, y: y_batch})
+                    print("Epoch: {}--->Iteration: {}, loss: {}, accuracy: {}".format(epoch, steps, loss_v, accuracy_v))
+
+        
+
 
 
 
