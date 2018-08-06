@@ -3,8 +3,8 @@ from keras.layers import Input, Flatten, Dense
 from keras.initializers import glorot_uniform
 from keras.models import Model
 from keras.utils.vis_utils import plot_model
-from Kears模型.conv_block import *
-from Kears模型.id_block import *
+from Kears_model.conv_block import *
+from Kears_model.id_block import *
 from tutorial import *
 import time
 import keras.backend as K
