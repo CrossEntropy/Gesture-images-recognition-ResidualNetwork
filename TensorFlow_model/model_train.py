@@ -167,17 +167,3 @@ with tf.Graph().as_default():  # 构建计算图
         # 保存变量
         saver.save(sess, save_path=Config.mode_path+"var.ckpt")
         print("模型的参数保存好了！")
-
-
-
-
-
-
-
-
-
-
-
-
-
-

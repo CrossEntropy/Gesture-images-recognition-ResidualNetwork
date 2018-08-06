@@ -4,8 +4,8 @@ import tensorflow as tf
 
 
 class Config:
-    train_path = "E:\\Github_project\\Residual_network\\data_sets\\train_signs.h5"   # 训练集的路径
-    test_path = "E:\\Github_project\\Residual_network\\data_sets\\test_signs.h5"     # 测试集的路径
+    train_path = "E:\\Github_project\\Residual_network\\datasets\\train_signs.h5"   # 训练集的路径
+    test_path = "E:\\Github_project\\Residual_network\\datasets\\test_signs.h5"     # 测试集的路径
     logdir = "E:\\Github_project\\Residual_network\\TensorFlow_model\\graph"           # event文件存放的路径
     mode_path = "E:\\Github_project\\Residual_network\\TensorFlow_model\\model\\"        # Variable存放的路径
     batch_size = 32    # mini batch的大小
@@ -239,4 +239,3 @@ if __name__ == "__main__":
     print(test_x_orig.shape)    # 测试集的特征的shape (120, 64, 64, 3)
     print(test_y_orig.shape)    # 测试集的标签的shape (120, )
     print(classes)              # 类别的种类共6类
-    print(train_x_orig.dtype)   # 数据的dtype为unit8
