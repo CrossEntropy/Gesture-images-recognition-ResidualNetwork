@@ -1,13 +1,14 @@
 from TensorFlow_model.toolkit import *
+import matplotlib.pyplot as plt
 
 with tf.Graph().as_default():  # 构建计算图
 
-    # 构建输入占位符, 分别为图像 标签 学习率
+    # 构建输入占位符, 分别为图像 标签
+    # 与训练不同的是，将x_input的shape设置为(None, 64, 64, 3)
     with tf.name_scope("Inputs"):
-        x_input = tf.placeholder(shape=(Config.batch_size, Config.height, Config.width, Config.channels),
+        x_input = tf.placeholder(shape=(None, Config.height, Config.width, Config.channels),
                                  dtype=tf.float32, name="images")
         y = tf.placeholder(shape=(Config.batch_size, ), dtype=tf.int32, name="labels")
-        learning_rate = tf.placeholder(shape=[], dtype=tf.float32, name="learning_rate")
 
     # 构建前向传播
     with tf.name_scope("Forward_propagation"):
@@ -89,4 +90,23 @@ with tf.Graph().as_default():  # 构建计算图
         with tf.name_scope("Softmax"):
             prediction = tf.nn.softmax(logits=logits)
 
+    # 建立绘画,运行计算图
+    with tf.Session() as sess:
 
+        # 建立Saver类对象
+        saver = tf.train.Saver()
+        # 加载训练好的参数
+        saver.restore(sess, Config.mode_path+"var.ckpt")
+
+        # 加载测试集
+        train_set_x, train_set_y, test_set_x, test_set_y, classes = load_data()
+        # 对测试集数据进行预处理
+        test_set_x = test_set_x / 255
+
+        # 开始测试
+        prediction_v = sess.run(prediction, feed_dict={x_input: test_set_x[0: 1]})
+        pre_class = np.squeeze(np.argmax(prediction_v, axis=1))
+        print("预测的类别: ", pre_class)
+        plt.title("class is "+str(pre_class))
+        plt.imshow(test_set_x[0])
+        plt.show()

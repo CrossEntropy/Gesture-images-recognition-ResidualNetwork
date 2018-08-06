@@ -228,7 +228,7 @@ def fully_connected(a_prev, fan_out=6):
 
 
 def flatten(a_prev):
-    a = tf.reshape(a_prev, shape=(Config.batch_size, -1))
+    a = tf.reshape(a_prev, shape=(-1, 2048))
     return a
 
 
@@ -239,3 +239,4 @@ if __name__ == "__main__":
     print(test_x_orig.shape)    # 测试集的特征的shape (120, 64, 64, 3)
     print(test_y_orig.shape)    # 测试集的标签的shape (120, )
     print(classes)              # 类别的种类共6类
+    print(train_x_orig.dtype)   # 数据的dtype为unit8
