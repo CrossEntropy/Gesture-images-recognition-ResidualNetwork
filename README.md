@@ -5,4 +5,4 @@
 ### 整个仓库分为三个大部分：
 ####  1.datasets----里面存放着训练集和测试集，均为h5文件. 其中训练集的样本个数为1080，0-6的手势图像各占360. 测试集的样本个数为120，0-6的手势图像各占20.  
 ####  2.Residula model----我采用Keras搭建的网络. 
-####3. TensorFlow model---我采用TensorFlow搭建的网络.
+####  3. TensorFlow model---我采用TensorFlow搭建的网络.
