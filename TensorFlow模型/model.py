@@ -1,0 +1,33 @@
+from TensorFlow模型.toolkit import *
+
+with tf.Graph().as_default():  # 构建计算图
+
+    # 构建输入占位符
+    with tf.name_scope("Inputs"):
+        x = tf.placeholder(shape=(Config.batch_size, Config.height, Config.width, Config.channels),
+                           dtype=tf.float32, name="images")
+        y = tf.placeholder(shape=(Config.batch_size, ), dtype=tf.int32, name="labels")
+
+    # 构建前向传播
+    with tf.name_scope("Forward_propagation"):
+
+        # 0填充
+        with tf.name_scope("Zero_padding"):
+            paddings = np.ones(shape=(4, 2)) * 3
+            paddings[0, :] = 0   # 只填充图像的height
+            paddings[-1, :] = 0  # 只填充图像的width
+            x = tf.pad(x, paddings=paddings)
+
+        # stage1
+        with tf.name_scope("Stage_1"):
+            with tf.name_scope("Conv_1"):
+                x = conv2d(x, filters_h=7, num_filters=2, strides=2, padding="VALID")
+            with tf.name_scope("BN_1"):
+                x = tf.nn.batch_normalization(x, training=True)
+            with tf.name_scope("Relu"):
+                x = tf.nn.relu(x)
+            with tf.name_scope("Max_pool"):
+                x = tf.nn.max_pool(x, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1], padding="VALID")
+
+
+

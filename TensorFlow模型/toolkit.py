@@ -8,7 +8,11 @@ class Config:
     test_path = "E:\\Github_project\\Residual_network\\data_sets\\test_signs.h5"     # 测试集的路径
     logdir = "E:\\Github_project\\Residual_network\\TensorFlow模型\\graph"           # event文件存放的路径
     mode_path = "E:\\Github_project\\Residual_network\\TensorFlow模型\\model"        # Variable存放的路径
-    batch_size = 32                                                                 # mini batch的大小
+    batch_size = 32   # mini batch的大小
+    channels = 3      # 图像的通道数
+    height = 64       # 图像的高
+    width = 64        # 图像的宽
+    paddings = 3       # 填充的圈数
 
 
 def load_data():
@@ -104,7 +108,7 @@ def conv2d(a_prev, filters_h, num_filters, strides, padding):
 
     # 进行卷积
     with tf.name_scope("convolution"):
-        z = tf.nn.conv2d(a_prev, w, strides=strides, padding=padding, name="z")
+        z = tf.nn.conv2d(a_prev, w, strides=[1, strides, strides, 1], padding=padding, name="z")
     return z
 
 
