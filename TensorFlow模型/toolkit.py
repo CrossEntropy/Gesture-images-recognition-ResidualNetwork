@@ -8,6 +8,7 @@ class Config:
     test_path = "E:\\Github_project\\Residual_network\\data_sets\\test_signs.h5"     # 测试集的路径
     logdir = "E:\\Github_project\\Residual_network\\TensorFlow模型\\graph"           # event文件存放的路径
     mode_path = "E:\\Github_project\\Residual_network\\TensorFlow模型\\model"        # Variable存放的路径
+    batch_size = 32                                                                 # mini batch的大小
 
 
 def load_data():
@@ -36,6 +37,38 @@ def convert_to_one_hot(Y, classes):
     """
     Y = np.eye(classes)[Y]
     return Y
+
+
+def mini_batches(x, y, seed, batch_size=Config.batch_size):
+    """
+    将数据集shuffled
+    :param x: 特征.  np.array, shape is (m, 64, 64, 3)
+    :param y: 标签. np.array, shape is (m, )
+    :param seed: 随机的种子. int
+    :param batch_size: 一个mini_batch的大小
+    :return: 划分好的mini_batches. list---->[(x_mini_batch_1, y_min_batch_2), .....]
+    """
+    np.random.seed(seed)
+
+    # 取得样本的个数
+    m = x.shape[0]
+
+    # 将x, y shuffle
+    sq = np.random.permutation(m)
+    x_shuffle = x[sq]
+    y_shuflle = y[sq]
+
+    # 取得mini batch的个数
+    num_batches = m // batch_size
+
+    # 进行迭代
+    batches = []
+    for batch in range(num_batches):
+        x_batch = x_shuffle[batch * batch_size: (batch+1) * batch_size]
+        y_batch = y_shuflle[batch * batch_size: (batch+1) * batch_size]
+        batches.append((x_batch, y_batch))
+
+    return batches
 
 
 def initialize_weights(shape, fan_in):
