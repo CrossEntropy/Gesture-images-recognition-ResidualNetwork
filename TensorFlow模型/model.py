@@ -21,9 +21,9 @@ with tf.Graph().as_default():  # 构建计算图
         # stage1
         with tf.name_scope("Stage_1"):
             with tf.name_scope("Conv_1"):
-                x = conv2d(x, filters_h=7, num_filters=2, strides=2, padding="VALID")
+                x = conv2d(x, filters_h=7, num_filters=64, strides=2, padding="VALID")
             with tf.name_scope("BN_1"):
-                x = tf.nn.batch_normalization(x, training=True)
+                x = tf.layers.batch_normalization(x, training=True)
             with tf.name_scope("Relu"):
                 x = tf.nn.relu(x)
             with tf.name_scope("Max_pool"):
@@ -82,7 +82,14 @@ with tf.Graph().as_default():  # 构建计算图
 
         # 全连接层
         with tf.name_scope("Fully_connected"):
-            z = fully_connected(x_flatten)
+            logits = fully_connected(x_flatten)
+
+        # softmax层
+        with tf.name_scope("Softmax"):
+            prediction = tf.nn.softmax(logits=logits)
+
+    writer = tf.summary.FileWriter(logdir=Config.logdir, graph=tf.get_default_graph())
+    writer.close()
 
 
 

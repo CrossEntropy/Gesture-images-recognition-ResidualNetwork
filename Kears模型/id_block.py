@@ -59,6 +59,7 @@ def identity_block(X, f, filters, stage, block, lamd=0.00001, lamd1=0.00001, lam
 
     return X
 
+
 if __name__ == "__main__":
     np.random.seed(1)
     A_prev = tf.placeholder(dtype=tf.float32, shape=[3, 4, 4, 6])

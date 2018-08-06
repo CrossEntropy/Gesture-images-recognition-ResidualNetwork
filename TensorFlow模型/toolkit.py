@@ -14,7 +14,7 @@ class Config:
     width = 64         # 图像的宽
     paddings = 3       # 填充的圈数
     num_classes = 6    # 类别的总数
-    
+
 
 def load_data():
     """"
@@ -99,7 +99,7 @@ def conv2d(a_prev, filters_h, num_filters, strides, padding):
     :return: 本层的卷积输出. tf.tensor， shape根据padding所定
     """
     # 获得上一层滤波器的个数
-    fan_in = a_prev.get_shape.as_list[-1]
+    fan_in = a_prev.get_shape().as_list()[-1]
 
     # 构造下一层权重的维度
     shape = (filters_h, filters_h, fan_in, num_filters)
@@ -127,16 +127,20 @@ def identity_block(a_prev, num_filters, f=3, training=True):
 
     # 构建main path
     with tf.name_scope("Main_path"):
-        with tf.name_scope("Conv_1"):   # 第一个卷积层
+        with tf.name_scope("Conv_1"):    # 第一个卷积层
             z_1 = conv2d(a_prev, filters_h=1, num_filters=F1, strides=1, padding="VALID")
-        with tf.name_scope("BN_1"):     # 第一个BN
+        with tf.name_scope("BN_1"):      # 第一个BN
             z_bn = tf.layers.batch_normalization(z_1, training=training)
-        with tf.name_scope("Conv_2"):   # 第二个卷积层
-            z_2 = conv2d(z_bn, filters_h=f, num_filters=F2, strides=1, padding="SAME")
-        with tf.name_scope("BN_2"):     # 第二个BN
+        with tf.name_scope("Relu_1"):    # 第一个激活层
+            a_1 = tf.nn.relu(z_bn)
+        with tf.name_scope("Conv_2"):    # 第二个卷积层
+            z_2 = conv2d(a_1, filters_h=f, num_filters=F2, strides=1, padding="SAME")
+        with tf.name_scope("BN_2"):      # 第二个BN
             z_bn = tf.layers.batch_normalization(z_2, training=training)
-        with tf.name_scope("Conv_3"):   # 第三个卷积层
-            z_3 = conv2d(z_bn, filters_h=1, num_filters=F3, strides=1, padding="VALID")
+        with tf.name_scope("Relu_2"):    # 第一个激活层
+            a_2 = tf.nn.relu(z_bn)
+        with tf.name_scope("Conv_3"):    # 第三个卷积层
+            z_3 = conv2d(a_2, filters_h=1, num_filters=F3, strides=1, padding="VALID")
         with tf.name_scope("BN_3"):     # 第三个BN
             z_bn = tf.layers.batch_normalization(z_3, training=training)
 
@@ -144,8 +148,8 @@ def identity_block(a_prev, num_filters, f=3, training=True):
     with tf.name_scope("Shortcut"):
         shortcut = tf.identity(a_prev)
 
-    # 激活层
-    with tf.name_scope("Activation"):
+    # 第三个激活层激活层
+    with tf.name_scope("Relu_3"):
         a = tf.nn.relu(tf.add(shortcut, z_bn))
 
     return a
@@ -166,34 +170,38 @@ def convolution_block(a_prev, num_filters, f=3, s=2, training=True):
 
     # 构建main path
     with tf.name_scope("Main_path"):
-        with tf.name_scope("Conv_1"):  # 第一个卷积层
+        with tf.name_scope("Conv_1"):   # 第一个卷积层
             z_1 = conv2d(a_prev, filters_h=1, num_filters=F1, strides=s, padding="VALID")
-        with tf.name_scope("BN_1"):  # 第一个BN
+        with tf.name_scope("BN_1"):     # 第一个BN
             z_bn = tf.layers.batch_normalization(z_1, training=training)
-        with tf.name_scope("Conv_2"):  # 第二个卷积层
-            z_2 = conv2d(z_bn, filters_h=f, num_filters=F2, strides=1, padding="SAME")
-        with tf.name_scope("BN_2"):  # 第二个BN
+        with tf.name_scope("Relu_1"):   # 激活函数
+            a_1 = tf.nn.relu(z_bn)
+        with tf.name_scope("Conv_2"):   # 第二个卷积层
+            z_2 = conv2d(a_1, filters_h=f, num_filters=F2, strides=1, padding="SAME")
+        with tf.name_scope("BN_2"):     # 第二个BN
             z_bn = tf.layers.batch_normalization(z_2, training=training)
-        with tf.name_scope("Conv_3"):  # 第三个卷积层
-            z_3 = conv2d(z_bn, filters_h=1, num_filters=F3, strides=1, padding="VALID")
-        with tf.name_scope("BN_3"):  # 第三个BN
+        with tf.name_scope("Relu_2"):   # 激活函数
+            a_3 = tf.nn.relu(z_bn)
+        with tf.name_scope("Conv_3"):   # 第三个卷积层
+            z_3 = conv2d(a_3, filters_h=1, num_filters=F3, strides=1, padding="VALID")
+        with tf.name_scope("BN_3"):   # 第三个BN
             z_bn = tf.layers.batch_normalization(z_3, training=training)
 
     # 构建 shortcut, 原文中称之为skip connection
     with tf.name_scope("Shortcut"):
-        with tf.name_scope("Conv_4"):
-            z_4 = conv2d(z_bn, filters_h=1, num_filters=F3, strides=s, padding="VALID")
-        with tf.name_scope("BN_4"):
+        with tf.name_scope("Conv"):
+            z_4 = conv2d(a_prev, filters_h=1, num_filters=F3, strides=s, padding="VALID")
+        with tf.name_scope("BN"):
             shortcut = tf.layers.batch_normalization(z_4, training=training)
 
-    # 激活层
-    with tf.name_scope("Activation"):
+    # 第三个激活层
+    with tf.name_scope("Relu_3"):
         a = tf.nn.relu(tf.add(shortcut, z_bn))
 
     return a
 
 
-def fully_connected(a_prev, fan_out):
+def fully_connected(a_prev, fan_out=6):
     """
     构建 Z = XW + b
     :param a_prev: 上一层的输出. tf.tensor, shape is (batch_size, fan_in)
@@ -204,7 +212,7 @@ def fully_connected(a_prev, fan_out):
     fan_in = a_prev.get_shape().as_list[-1]
 
     # 初始化权重
-    w = initialize_weights((fan_in, fan_out), fan_out)
+    w = initialize_weights((fan_in, fan_out), fan_in)
 
     # 初始化偏置
     with tf.name_scope("biases"):
