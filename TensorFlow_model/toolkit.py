@@ -17,6 +17,7 @@ class Config:
     epochs = 50        # epoch的总数
     learning_rate = 0.001      # 学习率
 
+
 def load_data():
     """"
     加载数据集
@@ -227,7 +228,7 @@ def fully_connected(a_prev, fan_out=6):
 
 
 def flatten(a_prev):
-    a = tf.reshape(a_prev, shape=(-1, 2048))
+    a = tf.reshape(a_prev, shape=(Config.batch_size, -1))
     return a
 
 
@@ -238,4 +239,3 @@ if __name__ == "__main__":
     print(test_x_orig.shape)    # 测试集的特征的shape (120, 64, 64, 3)
     print(test_y_orig.shape)    # 测试集的标签的shape (120, )
     print(classes)              # 类别的种类共6类
-    print(convert_to_one_hot(train_y_orig, 6).shape)
