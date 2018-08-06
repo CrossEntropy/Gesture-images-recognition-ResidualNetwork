@@ -4,8 +4,8 @@ with tf.Graph().as_default():  # 构建计算图
 
     # 构建输入占位符, 分别为图像 标签 学习率
     with tf.name_scope("Inputs"):
-        input = tf.placeholder(shape=(Config.batch_size, Config.height, Config.width, Config.channels),
-                           dtype=tf.float32, name="images")
+        x_input = tf.placeholder(shape=(Config.batch_size, Config.height, Config.width, Config.channels),
+                                 dtype=tf.float32, name="images")
         y = tf.placeholder(shape=(Config.batch_size, ), dtype=tf.int32, name="labels")
         learning_rate = tf.placeholder(shape=[], dtype=tf.float32, name="learning_rate")
 
@@ -17,7 +17,7 @@ with tf.Graph().as_default():  # 构建计算图
             paddings = np.ones(shape=(4, 2)) * 3
             paddings[0, :] = 0   # 只填充图像的height
             paddings[-1, :] = 0  # 只填充图像的width
-            x = tf.pad(input, paddings=paddings)
+            x = tf.pad(x_input, paddings=paddings)
 
         # stage1
         with tf.name_scope("Stage_1"):
@@ -95,7 +95,7 @@ with tf.Graph().as_default():  # 构建计算图
                               name="cross_entropy")
 
     # 构建优化器
-    # 这一步现需要先计算 mean 和 stddev 的滑动平均
+    # 这一步现需要先计算 mean 和 variance 的滑动平均
     with tf.name_scope("Train"):
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
@@ -134,12 +134,11 @@ with tf.Graph().as_default():  # 构建计算图
             batches = mini_batches(train_set_x, train_set_y, seed)
             for x_batch, y_batch in batches:
                 steps += 1
-                loss_v, _ = sess.run([loss, train_op], feed_dict={input: x_batch, y: y_batch,
-                                                                   learning_rate: Config.learning_rate})
+                loss_v, _ = sess.run([loss, train_op], feed_dict={x_input: x_batch, y: y_batch, learning_rate: Config.learning_rate})
 
                 # 每迭代10步打印一下当前批次训练集loss, 准确率
                 if steps % 10 == 0:
-                    accuracy_v = sess.run(accuracy, feed_dict={input: x_batch, y: y_batch})
+                    accuracy_v = sess.run(accuracy, feed_dict={x_input: x_batch, y: y_batch})
                     print("Epoch: {}--->Iteration: {}, loss: {}, accuracy: {}".format(epoch, steps, loss_v, accuracy_v))
 
         # 迭代完成之后查看一下测试集上的准确率
@@ -148,11 +147,32 @@ with tf.Graph().as_default():  # 构建计算图
         num = 0
         for x_batch, y_batch in batches:
             num += 1
-            accuracy_v += sess.run(accuracy, feed_dict={input: x_batch, y: y_batch})
+            accuracy_v += sess.run(accuracy, feed_dict={x_input: x_batch, y: y_batch})
         print("Test set average accuracy: "+str(accuracy_v / num))
 
-        # 保存一下变量
-        
+        # 保存变量:
+        #        1. 需要保存 trainable variables
+        #        2. 需要保存 滑动平均的 mean 和 variance
+
+        global_var_list = tf.global_variables()        # 全部变量
+        trainable_var_list = tf.trainable_variables()  # 可训练的变量
+
+        mean_list = [var for var in global_var_list if "moving_mean" in var.name]          # 滑动平均的mean
+        variance_list = [var for var in global_var_list if "moving_variance" in var.name]  # 滑动平均的variance
+        saved_var_list = mean_list + variance_list + trainable_var_list    # 需要保存的全部变量
+
+        # 创建一个Saver类对象
+        saver = tf.train.Saver(var_list=saved_var_list)
+
+        # 保存变量
+        saver.save(sess, save_path=Config.mode_path+"var.ckpt")
+        print("模型的参数保存好了！")
+
+
+
+
+
+
 
 
 

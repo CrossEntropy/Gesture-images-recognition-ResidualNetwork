@@ -7,7 +7,7 @@ class Config:
     train_path = "E:\\Github_project\\Residual_network\\data_sets\\train_signs.h5"   # 训练集的路径
     test_path = "E:\\Github_project\\Residual_network\\data_sets\\test_signs.h5"     # 测试集的路径
     logdir = "E:\\Github_project\\Residual_network\\TensorFlow_model\\graph"           # event文件存放的路径
-    mode_path = "E:\\Github_project\\Residual_network\\TensorFlow_model\\model"        # Variable存放的路径
+    mode_path = "E:\\Github_project\\Residual_network\\TensorFlow_model\\model\\"        # Variable存放的路径
     batch_size = 32    # mini batch的大小
     channels = 3       # 图像的通道数
     height = 64        # 图像的高
