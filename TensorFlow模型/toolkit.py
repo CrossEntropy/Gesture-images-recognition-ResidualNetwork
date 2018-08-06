@@ -8,12 +8,13 @@ class Config:
     test_path = "E:\\Github_project\\Residual_network\\data_sets\\test_signs.h5"     # 测试集的路径
     logdir = "E:\\Github_project\\Residual_network\\TensorFlow模型\\graph"           # event文件存放的路径
     mode_path = "E:\\Github_project\\Residual_network\\TensorFlow模型\\model"        # Variable存放的路径
-    batch_size = 32   # mini batch的大小
-    channels = 3      # 图像的通道数
-    height = 64       # 图像的高
-    width = 64        # 图像的宽
+    batch_size = 32    # mini batch的大小
+    channels = 3       # 图像的通道数
+    height = 64        # 图像的高
+    width = 64         # 图像的宽
     paddings = 3       # 填充的圈数
-
+    num_classes = 6    # 类别的总数
+    
 
 def load_data():
     """"
@@ -116,13 +117,13 @@ def identity_block(a_prev, num_filters, f=3, training=True):
     """
     构建恒等映射块
     :param a_prev: 上一层的输出. tf.tensor
-    :param num_filters: 全部卷积层滤波器的数量. tuple, (F1, F2, F3)
+    :param num_filters: 全部卷积层滤波器的数量. tuple or list, (F1, F2, F3) or [F1, F2, F3]
     :param f: 第二个卷积层滤波器的尺寸. int
     :param training: 训练还是测试 bool
     :return: tf.tensor
     """
     # 滤波器的数量
-    (F1, F2, F3) = num_filters
+    F1, F2, F3 = num_filters
 
     # 构建main path
     with tf.name_scope("Main_path"):
@@ -154,14 +155,14 @@ def convolution_block(a_prev, num_filters, f=3, s=2, training=True):
     """
     构建卷积映射块
     :param a_prev: 上一层的输出. tf.tensor
-    :param num_filters: 全部卷积层滤波器的数量. tuple, (F1, F2，F3)
-    :param f: 第二个卷积层的滤波器的尺寸. int
+    :param num_filters: 全部卷积层滤波器的数量. tuple or list, (F1, F2，F3) or [F1, F2, F3]
+    :param f: 第二个卷积层的滤波器的尺寸. intF
     :param s: 第一个卷积层滤波器的步长. int
     :param training: 训练还是测试. bool
     :return: tf.tensor
     """
     # 滤波器的数量
-    (F1, F2, F3) = num_filters
+    F1, F2, F3 = num_filters
 
     # 构建main path
     with tf.name_scope("Main_path"):
@@ -190,6 +191,30 @@ def convolution_block(a_prev, num_filters, f=3, s=2, training=True):
         a = tf.nn.relu(tf.add(shortcut, z_bn))
 
     return a
+
+
+def fully_connected(a_prev, fan_out):
+    """
+    构建 Z = XW + b
+    :param a_prev: 上一层的输出. tf.tensor, shape is (batch_size, fan_in)
+    :param fan_out: 扇入or本层的神经元的数目. int
+    :return: Z. tf.tensor, shape is (batch_size, fan_out)
+    """
+    # 获得 fan_in
+    fan_in = a_prev.get_shape().as_list[-1]
+
+    # 初始化权重
+    w = initialize_weights((fan_in, fan_out), fan_out)
+
+    # 初始化偏置
+    with tf.name_scope("biases"):
+        b = tf.Variable(tf.zeros(shape=(fan_out, )), dtype=tf.float32)
+
+    # 加权和
+    with tf.name_scope("linear_combination"):
+        z = tf.nn.bias_add(tf.matmul(a_prev, w), b)
+
+    return z
 
 
 def flatten(a_prev):
